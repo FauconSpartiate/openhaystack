@@ -38,7 +38,7 @@ struct OpenHaystackApp: App {
                 .environmentObject(self.accessoryController)
                 .frame(width: self.frameWidth, height: self.frameHeight)
                 .onAppear {
-                    self.checkForUpdates()
+                    //self.checkForUpdates()
                 }
         }
         .commands {
