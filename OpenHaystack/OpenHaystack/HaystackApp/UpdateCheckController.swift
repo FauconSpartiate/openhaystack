@@ -91,7 +91,8 @@ public struct UpdateCheckController {
     /// - Returns: .older when a newer version is available. .newer when the installed version is newer .same, if both versions are equal
     internal static func compareVersions(availableVersion: String, installedVersion: String) -> VersionCompare {
         let availableVersionSplit = availableVersion.split(separator: ".")
-        let installedVersionSplit = installedVersion.split(separator: ".")
+        var installedVersionSplit = installedVersion.split(separator: ".")
+        installedVersionSplit[installedVersionSplit.count-1] = installedVersionSplit[installedVersionSplit.count-1].split(separator: "-")[0]
 
         for (idx, availableVersionPart) in availableVersionSplit.enumerated() {
 
