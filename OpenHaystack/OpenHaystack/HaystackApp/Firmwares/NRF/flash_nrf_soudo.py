@@ -5,26 +5,12 @@ from base64 import b64decode
 import argparse
 
 
-def flash_openhaystack_fw(public_key, symmetric_key, update_interval, hex_path, snr=None):
+def flash_openhaystack_fw(public_key, hex_path, snr=None):
     """
     Flash openhaystack firmware to device
     @param (optional) int snr: Specify serial number of DK to run example on.
     """
-    # Check if paramters are valid
-    if len(public_key) != 57:
-        pk_len = len(public_key)
-        print(f'[!] Public key should be 57 bytes but is {pk_len} bytes')
-        exit(-1)
-
-    if len(symmetric_key) != 32:
-        sk_len = len(symmetric_key)
-        print(f'[!] Symmetric key should be 32 bytes but is {sk_len} bytes')
-        exit(-1)
-
-    if not 0 < update_interval < 4294967295:
-        print(f'[!] Update interval is {update_interval}, but must be bigger than 0 but smaller than 4294967295 (0xFFFFFFFF)')
-        exit(-1)
-
+    
     # Detect the device family of your device. Initialize an API object with UNKNOWN family and read the device's
     # family. This step is performed so this example can be run in all devices without customer input.
     print('[*] Opening API with device family UNKNOWN, reading the device family.')
@@ -118,8 +104,6 @@ if __name__ == "__main__":
     # Parse arguments given when calling the script via command line
     parser = argparse.ArgumentParser()
     parser.add_argument('-pk', '--public-key', help="Base64 encoded Public key (29 bytes)", required=True)
-    parser.add_argument('-sk', '--symmetric-key', help="Base64 encoded Symmetric key (32 bytes)", required=True)
-    parser.add_argument('-ui', '--update-interval', help="Update interval for key derivation in minutes", required=True, type=int)
     parser.add_argument('-ph', '--path-to-hex', help="Path to hexfile, defaults to script folder", default="")
     args = vars(parser.parse_args())
-    flash_openhaystack_fw(public_key=b64decode(args['public_key']), symmetric_key=b64decode(args['symmetric_key']), update_interval=args['update_interval'], hex_path=args['path_to_hex'])
+    flash_openhaystack_fw(public_key=b64decode(args['public_key']), hex_path=args['path_to_hex'])

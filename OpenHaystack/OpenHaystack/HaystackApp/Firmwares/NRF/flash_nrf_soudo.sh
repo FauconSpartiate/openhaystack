@@ -19,15 +19,11 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "  This script will create a virtual environment for the required tools."
             echo ""
-            echo "Call: flash_nrf.sh [-v <dir>] PUBLIC_KEY SYMMETRIC_KEY UPDATE_INTERVAL"
+            echo "Call: flash_nrf.sh [-v <dir>] ADVERTISEMENT_KEY"
             echo ""
             echo "Required Arguments:"
-            echo "  PUBLIC_KEY"
-            echo "     The base64-encoded public key"
-            echo "  SYMMETRIC_KEY"
-            echo "     The base64-encoded symmetric key"
-            echo "  UPDATE_INTERVAL"
-            echo "     Refresh interval for key derivation in minutes"
+            echo "  ADVERTISEMENT_KEY"
+            echo "     The base64-encoded advertisement key"
             echo ""
             echo "Optional Arguments:"
             echo "  -h, --help"
@@ -38,25 +34,9 @@ while [[ $# -gt 0 ]]; do
             exit 1
         ;;
         *)
-            if [[ -z "$PUBKEY" ]]; then
-                PUBKEY="$1"
+            if [[ -z "$ADVERTISEMENT_KEY" ]]; then
+                ADVERTISEMENT_KEY="$1"
                 shift
-
-                if [[ -z "$SYMKEY" ]]; then
-                    SYMKEY="$1"
-                    shift
-
-                    if [[ -z "$UPDATE_INTERVAL" ]]; then
-                        UPDATE_INTERVAL="$1"
-                        shift
-                    else
-                        echo "Got unexpected parameter $1"
-                        exit 1
-                fi
-                else
-                    echo "Got unexpected parameter $1"
-                    exit 1
-                fi
             else
                 echo "Got unexpected parameter $1"
                 exit 1
@@ -72,27 +52,13 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Defaults: Directory for the virtual environment
 VENV_DIR="$SCRIPT_DIR/venv"
 
-# Sanity check: Pubkey exists
-if [[ -z "$PUBKEY" ]]; then
-    echo "Missing public key, call with --help for usage"
+# Sanity check: Advkey exists
+if [[ -z "$ADVERTISEMENT_KEY" ]]; then
+    echo "Missing advertisement key, call with --help for usage"
     exit 1
 fi
 
-# Sanity check: Symmetric key exists
-if [[ -z "$SYMKEY" ]]; then
-    echo "Missing symmetric key, call with --help for usage"
-    exit 1
-fi
-
-#Sanity check: update Interval exists
-if [[ -z "$UPDATE_INTERVAL" ]]; then
-    echo "Missing update interval, call with --help for usage"
-    exit 1
-fi
-
-echo $PUBKEY
-echo $SYMKEY
-echo $UPDATE_INTERVAL
+echo $ADVERTISEMENT_KEY
 
 # Setup the virtual environment
 if [[ ! -d "$VENV_DIR" ]]; then
@@ -135,5 +101,5 @@ fi
 set -e
 trap cleanup INT TERM EXIT
 echo "### Executing python script ###"
-python3 "$(dirname "$0")"/flash_nrf.py --public-key $PUBKEY --symmetric-key $SYMKEY --update-interval $UPDATE_INTERVAL --path-to-hex "$(dirname "$0")"/
+python3 "$(dirname "$0")"/flash_nrf_soudo.py --public-key $ADVERTISEMENT_KEY --path-to-hex "$(dirname "$0")"/
 echo "### Python script finished  ###"

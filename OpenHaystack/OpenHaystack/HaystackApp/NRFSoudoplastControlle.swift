@@ -58,3 +58,15 @@ struct NRFController {
         try loggingFileHandle.close()
     }
 }
+
+enum ClosureResult {
+    case success(URL)
+    case failure(URL, Error)
+}
+
+enum NRFFirmwareFlashError: Error {
+    /// Missing files for flashing
+    case notFound
+    /// Flashing / writing failed
+    case flashFailed
+}

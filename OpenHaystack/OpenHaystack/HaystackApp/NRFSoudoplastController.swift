@@ -9,7 +9,7 @@
 
 import Foundation
 
-struct NRFController {
+struct NRFSoudoplastController {
 
     static var nrfFirmwareDirectory: URL? {
         Bundle.main.resourceURL?.appendingPathComponent("NRF")
@@ -27,14 +27,13 @@ struct NRFController {
         guard let nrfDirectory = nrfFirmwareDirectory else { return }
 
         try FileManager.default.copyFolder(from: nrfDirectory, to: urlTemp)
-        let urlScript = urlTemp.appendingPathComponent("flash_nrf.sh")
+        let urlScript = urlTemp.appendingPathComponent("flash_nrf_soudo.sh")
         try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlScript.path)
-        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("flash_nrf.py").path)
+        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("flash_nrf_soudo.py").path)
 
         // Get public key, newest relevant symmetric key and updateInterval for flashing
-        let masterBeaconPublicKey = try accessory.getUncompressedPublicKey()
-        let masterBeaconSymmetricKey = accessory.getNewestSymmetricKey()
-        let arguments = [masterBeaconPublicKey.base64EncodedString(), masterBeaconSymmetricKey.base64EncodedString(), String(updateInterval)]
+        let advertisementKey = try accessory.getAdvertisementKey()
+        let arguments = [advertisementKey.base64EncodedString()]
 
         // Create file for logging and get file handle
         let loggingFileUrl = urlTemp.appendingPathComponent("nrf_installer.log")
@@ -57,4 +56,16 @@ struct NRFController {
 
         try loggingFileHandle.close()
     }
+}
+
+enum ClosureResult {
+    case success(URL)
+    case failure(URL, Error)
+}
+
+enum NRFFirmwareFlashError: Error {
+    /// Missing files for flashing
+    case notFound
+    /// Flashing / writing failed
+    case flashFailed
 }
