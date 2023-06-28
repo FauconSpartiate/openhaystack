@@ -16,116 +16,42 @@ struct NRFSoudoplastInstallSheet: View {
     @Binding var scriptOutput: String?
     @State var isFlashing = false
 
-    @ObservedObject var days = NumbersOnly()
-    @ObservedObject var hours = NumbersOnly()
-    @ObservedObject var minutes = NumbersOnly()
-
     @Environment(\.presentationMode) var presentationMode
-
+    
     var body: some View {
         VStack {
             self.flashView
-                .padding()
                 .overlay(self.loadingOverlay)
-                .frame(minWidth: 640, minHeight: 480, alignment: .center)
+                .frame(minWidth: 80, minHeight: 80, alignment: .center)
         }
         .onAppear {
+            if let accessory = self.accessory {
+                deployAccessoryToNRFDevice(accessory: accessory);
+            }
         }
     }
 
     var flashView: some View {
         VStack {
-            Text("Flash your NRF Device")
-                .font(.title2)
-
-            Text("Fill out options for flashing firmware")
-                .foregroundColor(.gray)
-
-            Divider()
-
-            Text(
-                "Soudoplast specific"
-            )
-            self.timePicker
-
-            Text("One day is a reasonable amount of time")
-                .font(.footnote)
-                .foregroundColor(.secondary)
-
-            Spacer()
-
-            HStack {
-                Spacer()
-
-                Button(
-                    "Deploy",
-                    action: {
-                        if let accessory = self.accessory {
-                            var daysInt = Int(days.value) ?? 1
-                            if daysInt < 1 {
-                                daysInt = 1
-                            }
-                            let hoursInt = 0
-                            let minutesInt = 0
-
-                            let updateInterval = daysInt * 24 * 60 + hoursInt * 60 + minutesInt
-                            //warn user if no update interval was given
-                            if updateInterval > 0 {
-                                deployAccessoryToNRFDevice(accessory: accessory, updateInterval: updateInterval)
-                            } else {
-
-                            }
-                        }
-                    })
-
-                Button(
-                    "Cancel",
-                    action: {
-                        self.presentationMode.wrappedValue.dismiss()
-                    })
-            }
-
-            HStack {
-                Spacer()
-                Text("Flashing from M1 Macs might fail due to missing ARM support by NRF")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-            }
         }
-    }
-
-    var timePicker: some View {
-        Group {
-            HStack {
-                TextField("", text: $days.value).textFieldStyle(RoundedBorderTextFieldStyle())
-                Text("Day(s)")
-            }
-        }.padding()
     }
 
     var loadingOverlay: some View {
         ZStack {
             if isFlashing {
-                Rectangle()
-                    .fill(Color.gray)
-                    .opacity(0.5)
-
-                VStack {
+         
                     ActivityIndicator(size: .large)
-                    Text("This can take up to 3min")
-                }
-
+                
             }
         }
     }
 
-    func deployAccessoryToNRFDevice(accessory: Accessory, updateInterval: Int) {
+    func deployAccessoryToNRFDevice(accessory: Accessory) {
         do {
             self.isFlashing = true
 
             try NRFSoudoplastController.flashToNRF(
                 accessory: accessory,
-                updateInterval: updateInterval,
                 completion: { result in
                     presentationMode.wrappedValue.dismiss()
 

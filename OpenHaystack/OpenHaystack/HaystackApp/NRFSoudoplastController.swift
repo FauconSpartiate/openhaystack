@@ -16,7 +16,7 @@ struct NRFSoudoplastController {
     }
 
     /// Runs the script to flash the firmware onto an nRF Device.
-    static func flashToNRF(accessory: Accessory, updateInterval: Int, completion: @escaping (ClosureResult) -> Void) throws {
+    static func flashToNRF(accessory: Accessory, completion: @escaping (ClosureResult) -> Void) throws {
         // Copy firmware to a temporary directory
         let temp = NSTemporaryDirectory() + "OpenHaystack"
         let urlTemp = URL(fileURLWithPath: temp)
