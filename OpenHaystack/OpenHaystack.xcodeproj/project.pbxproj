@@ -58,7 +58,6 @@
 		78EC227225DBC8CE0042B775 /* Accessory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EC227125DBC8CE0042B775 /* Accessory.swift */; };
 		78EC227725DBDB7E0042B775 /* KeychainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EC227625DBDB7E0042B775 /* KeychainController.swift */; };
 		78F8BB4C261C50EB00D9F37F /* LargeButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F8BB4B261C50EB00D9F37F /* LargeButtonStyle.swift */; };
-		845F8AC12A4B0C2600AF1C3B /* NRF_Soudoplast in Resources */ = {isa = PBXBuildFile; fileRef = 845F8AC02A4B0C2600AF1C3B /* NRF_Soudoplast */; };
 		848F86FD2A4B0585003942C6 /* NRFSoudoplastController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848F86FC2A4B0585003942C6 /* NRFSoudoplastController.swift */; };
 		848F86FF2A4B085A003942C6 /* NRFSoudoplastInstallSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848F86FE2A4B085A003942C6 /* NRFSoudoplastInstallSheet.swift */; };
 		F126102F2600D1D80066A859 /* Slider+LogScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = F126102E2600D1D80066A859 /* Slider+LogScale.swift */; };
@@ -172,7 +171,6 @@
 		78EC227125DBC8CE0042B775 /* Accessory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accessory.swift; sourceTree = "<group>"; };
 		78EC227625DBDB7E0042B775 /* KeychainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainController.swift; sourceTree = "<group>"; };
 		78F8BB4B261C50EB00D9F37F /* LargeButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButtonStyle.swift; sourceTree = "<group>"; };
-		845F8AC02A4B0C2600AF1C3B /* NRF_Soudoplast */ = {isa = PBXFileReference; lastKnownFileType = folder; path = NRF_Soudoplast; sourceTree = "<group>"; };
 		848F86FC2A4B0585003942C6 /* NRFSoudoplastController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NRFSoudoplastController.swift; sourceTree = "<group>"; };
 		848F86FE2A4B085A003942C6 /* NRFSoudoplastInstallSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NRFSoudoplastInstallSheet.swift; sourceTree = "<group>"; };
 		F126102E2600D1D80066A859 /* Slider+LogScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Slider+LogScale.swift"; sourceTree = "<group>"; };
@@ -221,7 +219,6 @@
 		78023CAC25F7775300B083EF /* Firmwares */ = {
 			isa = PBXGroup;
 			children = (
-				845F8AC02A4B0C2600AF1C3B /* NRF_Soudoplast */,
 				5A2C9088273425720044407E /* NRF */,
 				78023CAE25F7797400B083EF /* ESP32 */,
 				78023CAD25F7775A00B083EF /* Microbit */,
@@ -539,7 +536,6 @@
 				781EB3FE25DAD7EA00FEAA19 /* MapViewController.xib in Resources */,
 				5A2C9089273425720044407E /* NRF in Resources */,
 				781EB40025DAD7EA00FEAA19 /* Preview Assets.xcassets in Resources */,
-				845F8AC12A4B0C2600AF1C3B /* NRF_Soudoplast in Resources */,
 				781EB40225DAD7EA00FEAA19 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
