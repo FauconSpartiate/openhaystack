@@ -51,8 +51,8 @@ struct ManageAccessoriesView: View {
                 ESP32InstallSheet(accessory: self.$accessoryToDeploy, alertType: self.$alertType)
             case .nrfDeviceInstall:
                 NRFInstallSheet(accessory: self.$accessoryToDeploy, alertType: self.$alertType, scriptOutput: self.$scriptOutput)
-            case .nrfSoudoplastDeviceInstall:
-                NRFSoudoplastInstallSheet(accessory: self.$accessoryToDeploy, alertType: self.$alertType, scriptOutput: self.$scriptOutput)
+            case .nrfLowPowerDeviceInstall:
+                NRFLowPowerInstallSheet(accessory: self.$accessoryToDeploy, alertType: self.$alertType, scriptOutput: self.$scriptOutput)
             case .deployFirmware:
                 self.selectTargetView
             }
@@ -161,9 +161,9 @@ struct ManageAccessoriesView: View {
                 ).buttonStyle(LargeButtonStyle())
                 
                 Button(
-                    "Soudoplast - NRF Device",
+                    "NRF Device - Low Power",
                     action: {
-                        self.sheetShown = .nrfSoudoplastDeviceInstall
+                        self.sheetShown = .nrfLowPowerDeviceInstall
                     }
                 ).buttonStyle(LargeButtonStyle())
 
@@ -277,7 +277,7 @@ struct ManageAccessoriesView: View {
         }
         case esp32Install
         case nrfDeviceInstall
-        case nrfSoudoplastDeviceInstall
+        case nrfLowPowerDeviceInstall
         case deployFirmware
     }
 }

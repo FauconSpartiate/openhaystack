@@ -90,10 +90,6 @@ if [[ -z "$UPDATE_INTERVAL" ]]; then
     exit 1
 fi
 
-echo $PUBKEY
-echo $SYMKEY
-echo $UPDATE_INTERVAL
-
 # Setup the virtual environment
 if [[ ! -d "$VENV_DIR" ]]; then
     # Create the virtual environment

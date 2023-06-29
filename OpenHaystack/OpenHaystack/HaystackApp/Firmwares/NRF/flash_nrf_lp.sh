@@ -15,11 +15,11 @@ while [[ $# -gt 0 ]]; do
             shift
         ;;
         -h|--help)
-            echo "flash_nrf.sh - Flash the OpenHaystack firmware onto a nRF board"
+            echo "flash_nrf_lp.sh - Flash the low power OpenHaystack firmware onto a nRF board"
             echo ""
             echo "  This script will create a virtual environment for the required tools."
             echo ""
-            echo "Call: flash_nrf.sh [-v <dir>] ADVERTISEMENT_KEY"
+            echo "Call: flash_nrf_lp.sh [-v <dir>] ADVERTISEMENT_KEY"
             echo ""
             echo "Required Arguments:"
             echo "  ADVERTISEMENT_KEY"
@@ -57,8 +57,6 @@ if [[ -z "$ADVERTISEMENT_KEY" ]]; then
     echo "Missing advertisement key, call with --help for usage"
     exit 1
 fi
-
-echo $ADVERTISEMENT_KEY
 
 # Setup the virtual environment
 if [[ ! -d "$VENV_DIR" ]]; then
@@ -101,5 +99,5 @@ fi
 set -e
 trap cleanup INT TERM EXIT
 echo "### Executing python script ###"
-python3 "$(dirname "$0")"/flash_nrf_soudo.py --public-key $ADVERTISEMENT_KEY --path-to-hex "$(dirname "$0")"/
+python3 "$(dirname "$0")"/flash_nrf_lp.py --advertisement-key $ADVERTISEMENT_KEY --path-to-hex "$(dirname "$0")"/
 echo "### Python script finished  ###"

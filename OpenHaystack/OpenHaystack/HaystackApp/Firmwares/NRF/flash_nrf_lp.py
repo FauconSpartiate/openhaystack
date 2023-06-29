@@ -5,12 +5,17 @@ from base64 import b64decode
 import argparse
 
 
-def flash_openhaystack_fw(public_key, hex_path, snr=None):
+def flash_openhaystack_fw(advertisement_key, hex_path, snr=None):
     """
     Flash openhaystack firmware to device
     @param (optional) int snr: Specify serial number of DK to run example on.
     """
-    
+    # Check if paramters are valid
+    if len(advertisement_key) != 27:
+        ak_len = len(advertisement_key)
+        print(f'[!] Advertisement key should be 27 bytes but is {ak_len} bytes')
+        exit(-1)
+
     # Detect the device family of your device. Initialize an API object with UNKNOWN family and read the device's
     # family. This step is performed so this example can be run in all devices without customer input.
     print('[*] Opening API with device family UNKNOWN, reading the device family.')
@@ -34,33 +39,16 @@ def flash_openhaystack_fw(public_key, hex_path, snr=None):
 
     print(f'[*] Device version {device_version}')
     # Select hex file according to device family and device version
-    hex_file_path = f'{hex_path}{device_family}_{device_version.split("_")[0]}_openHayStack.hex'
+    hex_file_path = f'{hex_path}{device_family}_{device_version.split("_")[0]}_openHayStack_lp.hex'
 
     print(f'[*] Patching hex file \'{hex_file_path}\' with supplied keys')
 
     # Open hex file and patch cryptographic keys
     ih = IntelHex(hex_file_path)
 
-    if(device_family == "NRF52"):
-        sk_address = ih.find(b'OFFLINEFINDINGSYMMETRICKEYHERE!')
-        print(f'[*] SK address in hex file is {sk_address}')
-        ih.puts(sk_address, symmetric_key)
-
-        pk_address = ih.find(b'OFFLINEFINDINGUNCOMPRESSEDPUBLICKEYHERE!AAAAAAAAAAAAAAAAA')
-        print(f'[*] PK address in hex file is {pk_address}')
-        ih.puts(pk_address, public_key)
-
-        update_interval_address = ih.find(b'\x37\x33\x33\x31')
-        if update_interval_address - pk_address != 60:
-            print(f'[!] {update_interval_address - pk_address} bytes between update interval and private key, but should be 60 bytes')
-            exit(-1)
-        print(f'[*] Update Interval address in hex file is {update_interval_address}')
-        update_interval_hex = (update_interval).to_bytes(4, byteorder='little')
-        ih.puts(update_interval_address, update_interval_hex)
-    else:
-        pk_address = ih.find(b'OFFLINEFINDINGPUBLICKEYHERE')
-        print(f'[*] PK address in hex file is {pk_address}')
-        ih.puts(pk_address, public_key)
+    ak_address = ih.find(b'OFFLINEFINDINGPUBLICKEYHERE')
+    print(f'[*] AK address in hex file is {ak_address}')
+    ih.puts(ak_address, advertisement_key)
 
     # Initialize an API object with the target family. This will load nrfjprog.dll with the proper target family.
     api = LowLevel.API(device_family)
@@ -103,7 +91,7 @@ def flash_openhaystack_fw(public_key, hex_path, snr=None):
 if __name__ == "__main__":
     # Parse arguments given when calling the script via command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('-pk', '--public-key', help="Base64 encoded Public key (29 bytes)", required=True)
+    parser.add_argument('-ak', '--advertisement-key', help="Base64 encoded Advertisement key (27 bytes)", required=True)
     parser.add_argument('-ph', '--path-to-hex', help="Path to hexfile, defaults to script folder", default="")
     args = vars(parser.parse_args())
-    flash_openhaystack_fw(public_key=b64decode(args['public_key']), hex_path=args['path_to_hex'])
+    flash_openhaystack_fw(advertisement_key=b64decode(args['advertisement_key']), hex_path=args['path_to_hex'])

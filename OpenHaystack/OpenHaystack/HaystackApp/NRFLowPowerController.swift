@@ -9,7 +9,7 @@
 
 import Foundation
 
-struct NRFSoudoplastController {
+struct NRFLowPowerController {
 
     static var nrfFirmwareDirectory: URL? {
         Bundle.main.resourceURL?.appendingPathComponent("NRF")
@@ -27,9 +27,9 @@ struct NRFSoudoplastController {
         guard let nrfDirectory = nrfFirmwareDirectory else { return }
 
         try FileManager.default.copyFolder(from: nrfDirectory, to: urlTemp)
-        let urlScript = urlTemp.appendingPathComponent("flash_nrf_soudo.sh")
+        let urlScript = urlTemp.appendingPathComponent("flash_nrf_lp.sh")
         try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlScript.path)
-        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("flash_nrf_soudo.py").path)
+        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("flash_nrf_lp.py").path)
 
         // Get public key, newest relevant symmetric key and updateInterval for flashing
         let advertisementKey = try accessory.getAdvertisementKey()

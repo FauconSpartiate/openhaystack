@@ -10,7 +10,7 @@
 import OSLog
 import SwiftUI
 
-struct NRFSoudoplastInstallSheet: View {
+struct NRFLowPowerInstallSheet: View {
     @Binding var accessory: Accessory?
     @Binding var alertType: OpenHaystackMainView.AlertType?
     @Binding var scriptOutput: String?
@@ -50,7 +50,7 @@ struct NRFSoudoplastInstallSheet: View {
         do {
             self.isFlashing = true
 
-            try NRFSoudoplastController.flashToNRF(
+            try NRFLowPowerController.flashToNRF(
                 accessory: accessory,
                 completion: { result in
                     presentationMode.wrappedValue.dismiss()

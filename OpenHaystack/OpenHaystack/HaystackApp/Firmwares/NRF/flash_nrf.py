@@ -55,26 +55,21 @@ def flash_openhaystack_fw(public_key, symmetric_key, update_interval, hex_path, 
     # Open hex file and patch cryptographic keys
     ih = IntelHex(hex_file_path)
 
-    if(device_family == "NRF52"):
-        sk_address = ih.find(b'OFFLINEFINDINGSYMMETRICKEYHERE!')
-        print(f'[*] SK address in hex file is {sk_address}')
-        ih.puts(sk_address, symmetric_key)
+    sk_address = ih.find(b'OFFLINEFINDINGSYMMETRICKEYHERE!')
+    print(f'[*] SK address in hex file is {sk_address}')
+    ih.puts(sk_address, symmetric_key)
 
-        pk_address = ih.find(b'OFFLINEFINDINGUNCOMPRESSEDPUBLICKEYHERE!AAAAAAAAAAAAAAAAA')
-        print(f'[*] PK address in hex file is {pk_address}')
-        ih.puts(pk_address, public_key)
+    pk_address = ih.find(b'OFFLINEFINDINGUNCOMPRESSEDPUBLICKEYHERE!AAAAAAAAAAAAAAAAA')
+    print(f'[*] PK address in hex file is {pk_address}')
+    ih.puts(pk_address, public_key)
 
-        update_interval_address = ih.find(b'\x37\x33\x33\x31')
-        if update_interval_address - pk_address != 60:
-            print(f'[!] {update_interval_address - pk_address} bytes between update interval and private key, but should be 60 bytes')
-            exit(-1)
-        print(f'[*] Update Interval address in hex file is {update_interval_address}')
-        update_interval_hex = (update_interval).to_bytes(4, byteorder='little')
-        ih.puts(update_interval_address, update_interval_hex)
-    else:
-        pk_address = ih.find(b'OFFLINEFINDINGPUBLICKEYHERE')
-        print(f'[*] PK address in hex file is {pk_address}')
-        ih.puts(pk_address, public_key)
+    update_interval_address = ih.find(b'\x37\x33\x33\x31')
+    if update_interval_address - pk_address != 60:
+        print(f'[!] {update_interval_address - pk_address} bytes between update interval and private key, but should be 60 bytes')
+        exit(-1)
+    print(f'[*] Update Interval address in hex file is {update_interval_address}')
+    update_interval_hex = (update_interval).to_bytes(4, byteorder='little')
+    ih.puts(update_interval_address, update_interval_hex)
 
     # Initialize an API object with the target family. This will load nrfjprog.dll with the proper target family.
     api = LowLevel.API(device_family)
