@@ -11,7 +11,7 @@ def flash_openhaystack_fw(advertisement_key, hex_path, snr=None):
     @param (optional) int snr: Specify serial number of DK to run example on.
     """
     # Check if paramters are valid
-    if len(advertisement_key) != 27:
+    if len(advertisement_key) != 28:
         ak_len = len(advertisement_key)
         print(f'[!] Advertisement key should be 27 bytes but is {ak_len} bytes')
         exit(-1)
@@ -46,7 +46,7 @@ def flash_openhaystack_fw(advertisement_key, hex_path, snr=None):
     # Open hex file and patch cryptographic keys
     ih = IntelHex(hex_file_path)
 
-    ak_address = ih.find(b'OFFLINEFINDINGPUBLICKEYHERE')
+    ak_address = ih.find(b'OFFLINEFINDINGPUBLICKEYHERE!')
     print(f'[*] AK address in hex file is {ak_address}')
     ih.puts(ak_address, advertisement_key)
 
