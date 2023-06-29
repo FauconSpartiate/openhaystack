@@ -39,7 +39,7 @@ def flash_openhaystack_fw(advertisement_key, hex_path, snr=None):
 
     print(f'[*] Device version {device_version}')
     # Select hex file according to device family and device version
-    hex_file_path = f'{hex_path}{device_family}_{device_version.split("_")[0]}_openHayStack_lp.hex'
+    hex_file_path = f'{hex_path}{device_family}_{device_version.split("_")[0]}_openHayStack_lp2.hex'
 
     print(f'[*] Patching hex file \'{hex_file_path}\' with supplied keys')
 
