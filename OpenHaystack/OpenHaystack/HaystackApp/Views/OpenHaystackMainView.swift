@@ -189,7 +189,7 @@ struct OpenHaystackMainView: View {
     }
     
     func update(){
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 300)
         {
             self.downloadLocationReports()
             update()
