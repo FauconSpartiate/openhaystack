@@ -11,6 +11,10 @@ import OSLog
 import SwiftUI
 
 struct AccessoryListEntry: View {
+    enum FocusedField{
+        case accessoryName
+    }
+
     var accessory: Accessory
     @Binding var accessoryIcon: String
     @Binding var accessoryColor: Color
@@ -20,6 +24,7 @@ struct AccessoryListEntry: View {
     var deployAccessoryToMicrobit: (Accessory) -> Void
     var zoomOn: (Accessory) -> Void
     let formatter = DateFormatter()
+    @FocusState private var focusedField: FocusedField?
 
     @State var editingName: Bool = false
 
@@ -55,6 +60,10 @@ struct AccessoryListEntry: View {
                     TextField("Enter accessory name", text: $accessoryName, onCommit: { self.editingName = false })
                         .font(.headline)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .focused($focusedField, equals: .accessoryName)
+                        .onAppear(perform:	{
+                            self.focusedField = .accessoryName
+                        })
                 } else {
                     Text(accessory.name)
                         .font(.headline)
