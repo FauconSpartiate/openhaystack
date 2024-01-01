@@ -18,8 +18,8 @@
         <customView translatesAutoresizingMaskIntoConstraints="NO" id="Hz6-mo-xeY">
             <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
             <subviews>
-                <mapView mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="dZd-TY-owu">
-                    <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
+                <mapView misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="dZd-TY-owu">
+                    <rect key="frame" x="0.0" y="0.0" width="1938" height="918"/>
                 </mapView>
             </subviews>
             <constraints>
