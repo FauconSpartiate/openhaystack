@@ -62,7 +62,7 @@ struct ManageAccessoriesView: View {
     /// Accessory List view.
     var accessoryList: some View {
 
-        List(self.accessories, id: \.self, selection: $focusedAccessory) { accessory in
+        List(self.accessories.sorted(by: { $0.name.localizedStandardCompare($1.name) == .orderedAscending }), id: \.self, selection: $focusedAccessory) { accessory in
             AccessoryListEntry(
                 accessory: accessory,
                 accessoryIcon: Binding(
