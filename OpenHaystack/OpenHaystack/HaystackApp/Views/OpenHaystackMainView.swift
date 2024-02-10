@@ -329,9 +329,19 @@ struct OpenHaystackMainView: View {
                 message: Text("Deploying failed. Please reconnect the device over USB"),
                 dismissButton: Alert.Button.okay())
         case .nrfDeployFailed:
+            var message: String
+            
+            if(self.scriptOutput == nil){
+                message = "Unknown Error"
+            } else if (self.scriptOutput!.contains("device family UNKNOWN")) {
+                message = "Connection to device failed"
+            } else {
+                message = self.scriptOutput!;
+            }
+            
             return Alert(
                 title: Text("Could not deploy"),
-                message: Text(self.scriptOutput ?? "Unknown Error"),
+                message: Text(message),
                 dismissButton: Alert.Button.okay())
         case .deployedSuccessfully:
             return Alert(
