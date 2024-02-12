@@ -19,7 +19,7 @@
             <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
             <subviews>
                 <mapView misplaced="YES" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="dZd-TY-owu">
-                    <rect key="frame" x="0.0" y="0.0" width="1938" height="918"/>
+                    <rect key="frame" x="0.0" y="0.0" width="1900" height="800"/>
                 </mapView>
             </subviews>
             <constraints>

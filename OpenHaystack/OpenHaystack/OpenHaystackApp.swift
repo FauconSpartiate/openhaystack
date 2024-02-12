@@ -36,7 +36,7 @@ struct OpenHaystackApp: App {
         WindowGroup {
             OpenHaystackMainView()
                 .environmentObject(self.accessoryController)
-                .frame(minWidth: 1938, maxWidth: .infinity, minHeight: 800, maxHeight: .infinity)
+                .frame(minWidth: 1900, maxWidth: .infinity, minHeight: 800, maxHeight: .infinity)
                 .onAppear {
                     //self.checkForUpdates()
                 }
