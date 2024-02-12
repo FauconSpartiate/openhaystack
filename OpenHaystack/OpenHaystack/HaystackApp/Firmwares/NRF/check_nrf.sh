@@ -4,61 +4,11 @@ cleanup() {
     echo "### done"
 }
 
-
-# Parameter parsing
-while [[ $# -gt 0 ]]; do
-    KEY="$1"
-    case "$KEY" in
-        -v|--venvdir)
-            VENV_DIR="$2"
-            shift
-            shift
-        ;;
-        -h|--help)
-            echo "flash_nrf_lp.sh - Flash the low power OpenHaystack firmware onto a nRF board"
-            echo ""
-            echo "  This script will create a virtual environment for the required tools."
-            echo ""
-            echo "Call: flash_nrf_lp.sh [-v <dir>] ADVERTISEMENT_KEY"
-            echo ""
-            echo "Required Arguments:"
-            echo "  ADVERTISEMENT_KEY"
-            echo "     The base64-encoded advertisement key"
-            echo ""
-            echo "Optional Arguments:"
-            echo "  -h, --help"
-            echo "      Show this message and exit."
-            echo "  -v, --venvdir <dir>"
-            echo "      Select Python virtual environment with esptool installed."
-            echo "      If the directory does not exist, it will be created."
-            exit 1
-        ;;
-        *)
-            if [[ -z "$ADVERTISEMENT_KEY" ]]; then
-                ADVERTISEMENT_KEY="$1"
-                shift
-            else
-                echo "Got unexpected parameter $1"
-                exit 1
-            fi
-        ;;
-    esac
-done
-
-
 # Directory of this script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-echo $SCRIPT_DIR
 
 # Defaults: Directory for the virtual environment
 VENV_DIR="$SCRIPT_DIR/venv"
-echo $VENV_DIR
-
-# Sanity check: Advkey exists
-if [[ -z "$ADVERTISEMENT_KEY" ]]; then
-    echo "Missing advertisement key, call with --help for usage"
-    exit 1
-fi
 
 # Setup the virtual environment
 if [[ ! -d "$VENV_DIR" ]]; then
@@ -101,5 +51,5 @@ fi
 set -e
 trap cleanup INT TERM EXIT
 echo "### Executing python script ###"
-python3 "$(dirname "$0")"/flash_nrf_lp.py --advertisement-key $ADVERTISEMENT_KEY --path-to-hex "$(dirname "$0")"/
+python3 "$(dirname "$0")"/check_nrf.py"/
 echo "### Python script finished  ###"

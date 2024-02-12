@@ -18,7 +18,7 @@ def flash_openhaystack_fw(advertisement_key, hex_path, snr=None):
 
     # Detect the device family of your device. Initialize an API object with UNKNOWN family and read the device's
     # family. This step is performed so this example can be run in all devices without customer input.
-    print('[*] Opening API with device family UNKNOWN, reading the device family.')
+    print('[*] Reading the device family.')
     with LowLevel.API(
             # Using with construction so there is no need to open or close the API class.
             LowLevel.DeviceFamily.UNKNOWN) as api:

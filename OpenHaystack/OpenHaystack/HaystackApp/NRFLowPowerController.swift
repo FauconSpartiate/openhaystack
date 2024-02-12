@@ -11,22 +11,42 @@ import Foundation
 
 struct NRFLowPowerController {
 
+    static var tempDir: URL?
+    
     static var nrfFirmwareDirectory: URL? {
         Bundle.main.resourceURL?.appendingPathComponent("NRF")
     }
+    
+    static var getTempDir: URL = {
+        do{
+            if tempDir != nil {
+                return tempDir!
+            }
+            
+            // Copy firmware to a temporary directory
+            let temp = NSTemporaryDirectory() + "OpenHaystack"
+            tempDir = URL(fileURLWithPath: temp)
+            try? FileManager.default.removeItem(at: tempDir!)
+            
+            try? FileManager.default.createDirectory(atPath: temp, withIntermediateDirectories: false, attributes: nil)
+            
+            guard let nrfDirectory = nrfFirmwareDirectory else { return tempDir! }
+            
+            try FileManager.default.copyFolder(from: nrfDirectory, to: tempDir!)
+            
+            return tempDir!
+            
+        }
+        catch
+        {
+            return tempDir!
+        }
+    }()
 
     /// Runs the script to flash the firmware onto an nRF Device.
     static func flashToNRF(accessory: Accessory, completion: @escaping (ClosureResult) -> Void) throws {
-        // Copy firmware to a temporary directory
-        let temp = NSTemporaryDirectory() + "OpenHaystack"
-        let urlTemp = URL(fileURLWithPath: temp)
-        try? FileManager.default.removeItem(at: urlTemp)
+        let urlTemp = getTempDir
 
-        try? FileManager.default.createDirectory(atPath: temp, withIntermediateDirectories: false, attributes: nil)
-
-        guard let nrfDirectory = nrfFirmwareDirectory else { return }
-
-        try FileManager.default.copyFolder(from: nrfDirectory, to: urlTemp)
         let urlScript = urlTemp.appendingPathComponent("flash_nrf_lp.sh")
         try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlScript.path)
         try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("flash_nrf_lp.py").path)
@@ -45,6 +65,35 @@ struct NRFLowPowerController {
         task.standardOutput = loggingFileHandle
         task.standardError = loggingFileHandle
         task.execute(withArguments: arguments) { e in
+            DispatchQueue.main.async {
+                if let error = e {
+                    completion(.failure(loggingFileUrl, error))
+                } else {
+                    completion(.success(loggingFileUrl))
+                }
+            }
+        }
+
+        try loggingFileHandle.close()
+    }
+    
+    static func checkDeviceConnection(completion: @escaping (ClosureResult) -> Void) throws {
+        let urlTemp = getTempDir
+
+        let urlScript = urlTemp.appendingPathComponent("check_nrf.sh")
+        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlScript.path)
+        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("check_nrf.py").path)
+
+        // Create file for logging and get file handle
+        let loggingFileUrl = urlTemp.appendingPathComponent("nrf_checker.log")
+        try "".write(to: loggingFileUrl, atomically: true, encoding: .utf8)
+        let loggingFileHandle = FileHandle.init(forWritingAtPath: loggingFileUrl.path)!
+
+        // Run script
+        let task = try NSUserUnixTask(url: urlScript)
+        task.standardOutput = loggingFileHandle
+        task.standardError = loggingFileHandle
+        task.execute() { e in
             DispatchQueue.main.async {
                 if let error = e {
                     completion(.failure(loggingFileUrl, error))

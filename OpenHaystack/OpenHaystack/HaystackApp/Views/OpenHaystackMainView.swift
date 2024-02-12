@@ -35,7 +35,10 @@ struct OpenHaystackMainView: View {
     @State var showMailPlugInPopover = false
 
     @State var mailPluginIsActive = false
-
+    
+    @State var isDeviceConnected = false
+    @State var isChecking = false
+    
     @State var showESP32DeploySheet = false
 
     var body: some View {
@@ -115,6 +118,22 @@ struct OpenHaystackMainView: View {
     /// All toolbar items shown.
     var toolbarView: some View {
         Group {
+            Button(
+                action: {
+                    self.checkDeviceConnection()
+                },
+                label: {
+                    HStack {
+                        Circle()
+                            .fill(self.isChecking ? Color.orange : self.isDeviceConnected ? Color.green : Color.red)
+                            .frame(width: 8, height: 8)
+                        Label("Check device connection", systemImage: "airtag.radiowaves.forward.fill")
+                    }
+
+                }
+            )
+            .disabled(self.isChecking)
+            
             if self.historyMapView {
                 Text("\(TimeInterval(self.historySeconds).description)")
                 Slider<Text, EmptyView>.withLogScale(value: $historySeconds, in: 30 * TimeInterval.Units.minute.rawValue...TimeInterval.Units.week.rawValue) {
@@ -214,6 +233,31 @@ struct OpenHaystackMainView: View {
             case .success(_):
                 break
             }
+        }
+    }
+    
+    func checkDeviceConnection() {
+        if self.isChecking {
+            return
+        }
+        
+        self.isChecking = true
+
+        do{
+            try NRFLowPowerController.checkDeviceConnection(
+                completion: { result in
+                    self.isChecking = false
+                    switch result {
+                    case .success(_):
+                        self.isDeviceConnected = true
+                    case .failure(_, _):
+                        self.isDeviceConnected = false
+                    }
+                })
+        }
+        catch {
+            self.isChecking = false
+            self.isDeviceConnected = false
         }
     }
 
