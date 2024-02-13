@@ -97,7 +97,7 @@ class AccessoryAnnotation: NSObject, MKAnnotation {
     let accessory: Accessory
 
     var coordinate: CLLocationCoordinate2D {
-        return accessory.lastLocation!.coordinate
+        return accessory.lastLocation?.coordinate ?? CLLocationCoordinate2D()
     }
 
     init(accessory: Accessory) {
