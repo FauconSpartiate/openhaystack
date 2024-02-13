@@ -28,6 +28,12 @@ def flash_openhaystack_fw(advertisement_key, hex_path, snr=None):
             api.connect_to_emu_without_snr()
         device_family = api.read_device_family()
         
+    print(f'[*] Device family: {device_family}')
+        
+    if device_family == "UNKNOWN":
+        print(f'Exiting...')
+        exit(-1)
+
     print(f'[*] Opening API with device family {device_family}, reading the device version.')
     with LowLevel.API(device_family) as api:
         # Open the loaded DLL and connect to an emulator probe. If several are connected a pop up will appear.
@@ -37,7 +43,8 @@ def flash_openhaystack_fw(advertisement_key, hex_path, snr=None):
             api.connect_to_emu_without_snr()
         device_version = api.read_device_version()
 
-    print(f'[*] Device version {device_version}')
+    print(f'[*] Device version: {device_version}')
+    
     # Select hex file according to device family and device version
     hex_file_path = f'{hex_path}{device_family}_{device_version.split("_")[0]}_openHayStack_lp2.hex'
 

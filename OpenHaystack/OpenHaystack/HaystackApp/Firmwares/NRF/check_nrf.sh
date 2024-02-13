@@ -47,7 +47,7 @@ else
     source "$VENV_DIR/bin/activate"
 fi
 
-# Call flash_nrf.py. Errors from here on are critical
+# Call check_nrf.py. Errors from here on are critical
 set -e
 trap cleanup INT TERM EXIT
 echo "### Executing python script ###"

@@ -204,7 +204,10 @@ struct OpenHaystackMainView: View {
             self.checkPluginIsRunning(nil)
         }
 
+        self.downloadLocationReports()
         update()
+        self.checkDeviceConnection()
+        updateDeviceCheck()
     }
     
     func update(){
@@ -212,6 +215,14 @@ struct OpenHaystackMainView: View {
         {
             self.downloadLocationReports()
             update()
+        }
+    }
+    
+    func updateDeviceCheck(){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10)
+        {
+            self.checkDeviceConnection()
+            updateDeviceCheck()
         }
     }
 
@@ -377,7 +388,7 @@ struct OpenHaystackMainView: View {
             
             if(self.scriptOutput == nil){
                 message = "Unknown Error"
-            } else if (self.scriptOutput!.contains("device family UNKNOWN")) {
+            } else if (self.scriptOutput!.contains("Device family: UNKNOWN")) {
                 message = "Connection to device failed"
             } else {
                 message = self.scriptOutput!;
