@@ -26,7 +26,16 @@ struct NRFLowPowerController {
             // Copy firmware to a temporary directory
             let temp = NSTemporaryDirectory() + "OpenHaystack"
             tempDir = URL(fileURLWithPath: temp)
-            try? FileManager.default.removeItem(at: tempDir!)
+            
+            // try? FileManager.default.removeItem(at: tempDir!)
+            let contents = try FileManager.default.contentsOfDirectory(at: tempDir!, includingPropertiesForKeys: nil, options: [])
+
+            for fileURL in contents {
+                if fileURL.lastPathComponent != "venv" {
+                    try FileManager.default.removeItem(at: fileURL)
+                    print("Deleted: \(fileURL.lastPathComponent)")
+                }
+            }
             
             try? FileManager.default.createDirectory(atPath: temp, withIntermediateDirectories: false, attributes: nil)
             
