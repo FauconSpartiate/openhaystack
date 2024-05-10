@@ -51,5 +51,5 @@ fi
 set -e
 trap cleanup INT TERM EXIT
 echo "### Executing python script ###"
-python3 "$(dirname "$0")"/check_nrf.py"/
+python3 "$(dirname "$0")"/check_nrf.py
 echo "### Python script finished  ###"
