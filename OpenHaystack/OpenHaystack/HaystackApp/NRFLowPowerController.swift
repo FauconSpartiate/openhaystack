@@ -17,7 +17,7 @@ struct NRFLowPowerController {
         Bundle.main.resourceURL?.appendingPathComponent("NRF")
     }
     
-    static var getTempDir: URL = {
+    static func getTempDir() -> URL {
         do{
             if tempDir != nil {
                 return tempDir!
@@ -28,12 +28,15 @@ struct NRFLowPowerController {
             tempDir = URL(fileURLWithPath: temp)
             
             // try? FileManager.default.removeItem(at: tempDir!)
-            let contents = try FileManager.default.contentsOfDirectory(at: tempDir!, includingPropertiesForKeys: nil, options: [])
-
-            for fileURL in contents {
-                if fileURL.lastPathComponent != "venv" {
-                    try FileManager.default.removeItem(at: fileURL)
-                    print("Deleted: \(fileURL.lastPathComponent)")
+            
+            if FileManager.default.fileExists(atPath: temp) {
+                let contents = try FileManager.default.contentsOfDirectory(at: tempDir!, includingPropertiesForKeys: nil, options: [])
+                
+                for fileURL in contents {
+                    if fileURL.lastPathComponent != "venv" {
+                        try FileManager.default.removeItem(at: fileURL)
+                        print("Deleted: \(fileURL.lastPathComponent)")
+                    }
                 }
             }
             
@@ -44,21 +47,22 @@ struct NRFLowPowerController {
             try FileManager.default.copyFolder(from: nrfDirectory, to: tempDir!)
             
             return tempDir!
-            
         }
         catch
         {
             return tempDir!
         }
-    }()
+    }
 
     /// Runs the script to flash the firmware onto an nRF Device.
     static func flashToNRF(accessory: Accessory, completion: @escaping (ClosureResult) -> Void) throws {
-        let urlTemp = getTempDir
-
+        let urlTemp = getTempDir()
+        print(urlTemp)
+        
         let urlScript = urlTemp.appendingPathComponent("flash_nrf_lp.sh")
         try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlScript.path)
         try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("flash_nrf_lp.py").path)
+        try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlTemp.appendingPathComponent("check_nrf.py").path)
 
         // Get public key, newest relevant symmetric key and updateInterval for flashing
         let advertisementKey = try accessory.getAdvertisementKey()
@@ -69,6 +73,8 @@ struct NRFLowPowerController {
         try "".write(to: loggingFileUrl, atomically: true, encoding: .utf8)
         let loggingFileHandle = FileHandle.init(forWritingAtPath: loggingFileUrl.path)!
 
+        print(loggingFileUrl)
+        
         // Run script
         let task = try NSUserUnixTask(url: urlScript)
         task.standardOutput = loggingFileHandle
@@ -87,7 +93,7 @@ struct NRFLowPowerController {
     }
     
     static func checkDeviceConnection(completion: @escaping (ClosureResult) -> Void) throws {
-        let urlTemp = getTempDir
+        let urlTemp = getTempDir()
 
         let urlScript = urlTemp.appendingPathComponent("check_nrf.sh")
         try FileManager.default.setAttributes([FileAttributeKey.posixPermissions: 0o755], ofItemAtPath: urlScript.path)
