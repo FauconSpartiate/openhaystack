@@ -31,8 +31,8 @@ struct PreviewData {
         return Date.init().addingTimeInterval(TimeInterval(-Double.random(in: 0..<24 * 60 * 60)))
     }
 
-    static func previewAccessory(name: String, color: Color, icon: String) -> Accessory {
-        let accessory = try! Accessory(name: name, color: color, iconName: icon)
+    static func previewAccessory(name: String, color: Color, number: String) -> Accessory {
+        let accessory = try! Accessory(name: name, color: color, number: number)
         accessory.lastLocation = randomLocation()
         accessory.locationTimestamp = randomTimestamp()
         accessory.isDeployed = true
@@ -53,11 +53,11 @@ struct PreviewData {
 
     static func accessoryList() -> [Accessory] {
         return [
-            previewAccessory(name: "Backpack", color: Color.green, icon: "briefcase.fill"),
-            previewAccessory(name: "Bag", color: Color.blue, icon: "latch.2.case.fill"),
-            previewAccessory(name: "Car", color: Color.red, icon: "car.fill"),
-            previewAccessory(name: "Keys", color: Color.orange, icon: "key.fill"),
-            previewAccessory(name: "Items", color: Color.gray, icon: "mappin"),
+            previewAccessory(name: "Backpack", color: Color.green, number: "1"),
+            previewAccessory(name: "Bag", color: Color.blue, number: "2"),
+            previewAccessory(name: "Car", color: Color.red, number: "3"),
+            previewAccessory(name: "Keys", color: Color.orange, number: "4"),
+            previewAccessory(name: "Items", color: Color.gray, number: "5"),
         ]
     }
 }

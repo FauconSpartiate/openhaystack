@@ -83,7 +83,7 @@ class AccessoryAnnotationView: MKAnnotationView {
                 .background(
                     ZStack {
                         Circle().fill(Color("PinColor"))
-                        Image(systemName: accessory.icon)
+                        Text(accessory.number)
                             .padding(3)
                     }
                 )

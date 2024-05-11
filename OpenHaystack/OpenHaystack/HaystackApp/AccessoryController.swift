@@ -56,6 +56,13 @@ class AccessoryController: ObservableObject {
 
     func save() throws {
         try KeychainController.storeInKeychain(accessories: self.accessories)
+        
+        for i in 0...(accessories.count - 1){
+            if(accessories[i].number == "")
+            {
+                accessories[i].number = String(i + 1)
+            }
+        }
     }
 
     func updateWithDecryptedReports(devices: [FindMyDevice]) {
@@ -88,7 +95,7 @@ class AccessoryController: ObservableObject {
     }
 
     func addAccessory() throws -> Accessory {
-        let accessory = try Accessory()
+        let accessory = try Accessory(number: String(accessories.count + 1))
         withAnimation {
             self.accessories.append(accessory)
         }
@@ -216,7 +223,14 @@ class AccessoryController: ObservableObject {
             // Filter out accessories with the same id (no duplicates)
             importedAccessories = importedAccessories.filter({ acc in !self.accessories.contains(where: { acc.id == $0.id }) })
             updatedAccessories.append(contentsOf: importedAccessories)
-            updatedAccessories.sort(by: { $0.name < $1.name })
+            updatedAccessories.sort(by: { $0.name.localizedStandardCompare($1.name) == .orderedAscending })
+            
+            for i in 0...(updatedAccessories.count - 1){
+                if(updatedAccessories[i].number == "")
+                {
+                    updatedAccessories[i].number = String(i + 1)
+                }
+            }
 
             self.accessories = updatedAccessories
 

@@ -65,9 +65,9 @@ struct ManageAccessoriesView: View {
         List(self.accessories.sorted(by: { $0.name.localizedStandardCompare($1.name) == .orderedAscending }), id: \.self, selection: $focusedAccessory) { accessory in
             AccessoryListEntry(
                 accessory: accessory,
-                accessoryIcon: Binding(
-                    get: { accessory.icon },
-                    set: { accessory.icon = $0 }
+                accessoryNum: Binding(
+                    get: { accessory.number },
+                    set: { accessory.number = $0 }
                 ),
                 accessoryColor: Binding(
                     get: { accessory.color },

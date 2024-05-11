@@ -16,7 +16,7 @@ struct AccessoryListEntry: View {
     }
 
     var accessory: Accessory
-    @Binding var accessoryIcon: String
+    @Binding var accessoryNum: String
     @Binding var accessoryColor: Color
     @Binding var accessoryName: String
     @Binding var alertType: OpenHaystackMainView.AlertType?
@@ -53,7 +53,7 @@ struct AccessoryListEntry: View {
     var body: some View {
 
         HStack {
-            IconSelectionView(selectedImageName: $accessoryIcon, selectedColor: $accessoryColor)
+            IconSelectionView(selectedNumber: $accessoryNum, selectedColor: $accessoryColor)
 
             VStack(alignment: .leading) {
                 if self.editingName {
@@ -233,9 +233,9 @@ struct AccessoryListEntry: View {
             Group {
                 AccessoryListEntry(
                     accessory: accessory,
-                    accessoryIcon: Binding(
-                        get: { accessory.icon },
-                        set: { accessory.icon = $0 }
+                    accessoryNum: Binding(
+                        get: { accessory.number },
+                        set: { accessory.number = $0 }
                     ),
                     accessoryColor: Binding(
                         get: { accessory.color },

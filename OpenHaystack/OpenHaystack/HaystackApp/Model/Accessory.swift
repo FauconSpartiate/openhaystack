@@ -15,15 +15,6 @@ import SwiftUI
 
 class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
 
-    static let icons = [
-        "creditcard.fill", "briefcase.fill", "case.fill", "latch.2.case.fill",
-        "key.fill", "mappin", "globe", "crown.fill",
-        "gift.fill", "car.fill", "bicycle", "figure.walk",
-        "heart.fill", "hare.fill", "tortoise.fill", "eye.fill",
-    ]
-    static func randomIcon() -> String {
-        return icons.randomElement() ?? ""
-    }
     static func randomColor() -> Color {
         return Color(hue: Double.random(in: 0..<1), saturation: 0.75, brightness: 1)
     }
@@ -38,7 +29,7 @@ class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
     @Published var updateInterval: TimeInterval
     @Published var locations: [FindMyLocationReport]?
     @Published var color: Color
-    @Published var icon: String
+    @Published var number: String
     @Published var lastLocation: CLLocation?
     @Published var locationTimestamp: Date?
     @Published var isDeployed: Bool {
@@ -65,7 +56,7 @@ class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
     }
     var lastAdvertisement: Date?
 
-    init(name: String = "New accessory", color: Color = randomColor(), iconName: String = randomIcon()) throws {
+    init(name: String = "New accessory", color: Color = randomColor(), number: String = "0") throws {
         self.name = name
         guard let key = BoringSSL.generateNewPrivateKey() else {
             throw KeyError.keyGenerationFailed
@@ -81,7 +72,7 @@ class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
         self.lastDerivationTimestamp = Date()
         self.updateInterval = TimeInterval(60 * 60)
         self.color = color
-        self.icon = iconName
+        self.number = number
         self.isDeployed = false
     }
 
@@ -96,7 +87,7 @@ class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
         self.oldestRelevantSymmetricKey = (try? container.decode(Data.self, forKey: .oldestRelevantSymmetricKey)) ?? symmetricKey
         self.lastDerivationTimestamp = (try? container.decode(Date.self, forKey: .lastDerivationTimestamp)) ?? Date()
         self.updateInterval = (try? container.decode(TimeInterval.self, forKey: .updateInterval)) ?? TimeInterval(60 * 60 * 24)
-        self.icon = (try? container.decode(String.self, forKey: .icon)) ?? ""
+        self.number = (try? container.decode(String.self, forKey: .number)) ?? ""
         self.isDeployed = (try? container.decode(Bool.self, forKey: .isDeployed)) ?? false
         self.isActive = (try? container.decode(Bool.self, forKey: .isActive)) ?? false
 
@@ -121,7 +112,7 @@ class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
         try container.encode(self.oldestRelevantSymmetricKey, forKey: .oldestRelevantSymmetricKey)
         try container.encode(self.lastDerivationTimestamp, forKey: .lastDerivationTimestamp)
         try container.encode(self.updateInterval, forKey: .updateInterval)
-        try container.encode(self.icon, forKey: .icon)
+        try container.encode(self.number, forKey: .number)
         try container.encode(self.isDeployed, forKey: .isDeployed)
         try container.encode(self.isActive, forKey: .isActive)
 
@@ -131,7 +122,6 @@ class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
             try container.encode(colorComponents, forKey: .colorComponents)
             try container.encode(colorSpace as String, forKey: .colorSpaceName)
         }
-
     }
 
     /// The public key in the format used for Offline finding. It is 28 bytes long and can be transferred to a microbit
@@ -320,13 +310,13 @@ class Accessory: ObservableObject, Codable, Identifiable, Equatable, Hashable {
         case updateInterval
         case colorComponents
         case colorSpaceName
-        case icon
+        case number
         case isDeployed
         case isActive
     }
 
     static func == (lhs: Accessory, rhs: Accessory) -> Bool {
-        return lhs.id == rhs.id && lhs.name == rhs.name && lhs.privateKey == rhs.privateKey && lhs.icon == rhs.icon && lhs.isDeployed == rhs.isDeployed
+        return lhs.id == rhs.id && lhs.name == rhs.name && lhs.privateKey == rhs.privateKey && lhs.number == rhs.number && lhs.isDeployed == rhs.isDeployed
     }
 }
 
