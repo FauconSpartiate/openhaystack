@@ -273,6 +273,8 @@ class AccessoryController: ObservableObject {
                         completion(.failure(.downloadingReportsFailed))
                     case .success(let devices):
                         let reports = devices.compactMap({ $0.reports }).flatMap({ $0 })
+                        self?.mergeAndSaveReports(reports: reports)
+                        
                         if reports.isEmpty {
                             completion(.failure(.noReportsFound))
                         } else {
@@ -281,11 +283,44 @@ class AccessoryController: ObservableObject {
                         }
                     }
                 }
-
             }
         }
     }
+    
+    func mergeAndSaveReports(reports: [FindMyReport]) {
+        // Get URL of the file to save reports
+        guard let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("location_reports.json") else {
+            return
+        }
+        print(fileURL)
+        
+        var allReports: [FindMyReport] = []
 
+        // Read previously saved reports from file
+        if let data = try? Data(contentsOf: fileURL),
+           let savedReports = try? JSONDecoder().decode([FindMyReport].self, from: data) {
+            // Remove duplicates from newly downloaded reports
+            let uniqueReports = reports.filter { newReport in
+                !savedReports.contains { existingReport in
+                    return newReport.id == existingReport.id
+                }
+            }
+            // Merge newly downloaded reports with previously saved reports
+            allReports.append(contentsOf: savedReports)
+            allReports.append(contentsOf: uniqueReports)
+        } else {
+            // No previously saved reports, simply add all newly downloaded reports
+            allReports.append(contentsOf: reports)
+        }
+
+        // Write merged reports back to file
+        do {
+            let jsonData = try JSONEncoder().encode(allReports)
+            try jsonData.write(to: fileURL)
+        } catch {
+            print("Failed to write new reports to file")
+        }
+    }
 }
 
 class AccessoryControllerPreview: AccessoryController {
