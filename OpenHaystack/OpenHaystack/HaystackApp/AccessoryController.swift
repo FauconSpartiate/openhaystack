@@ -55,14 +55,14 @@ class AccessoryController: ObservableObject {
     }
 
     func save() throws {
-        try KeychainController.storeInKeychain(accessories: self.accessories)
-        
         for i in 0...(accessories.count - 1){
             if(accessories[i].number == "")
             {
                 accessories[i].number = String(i + 1)
             }
         }
+        
+        try KeychainController.storeInKeychain(accessories: self.accessories) 
     }
 
     func updateWithDecryptedReports(devices: [FindMyDevice]) {
@@ -260,7 +260,7 @@ class AccessoryController: ObservableObject {
             case .success(let accountData):
 
                 guard let token = accountData.searchPartyToken,
-                    token.isEmpty == false
+                    !token.isEmpty
                 else {
                     completion(.failure(.searchPartyToken))
                     return
@@ -273,52 +273,69 @@ class AccessoryController: ObservableObject {
                         completion(.failure(.downloadingReportsFailed))
                     case .success(let devices):
                         let reports = devices.compactMap({ $0.reports }).flatMap({ $0 })
-                        self?.mergeAndSaveReports(reports: reports)
-                        
-                        if reports.isEmpty {
-                            completion(.failure(.noReportsFound))
-                        } else {
-                            self?.updateWithDecryptedReports(devices: devices)
-                            completion(.success(()))
+
+                        // Use mergeAndSaveReports asynchronously
+                        self?.mergeAndSaveReports(reports: reports) { error in
+                            if let error = error {
+                                print("Failed to merge and save reports: \(error)")
+                                completion(.failure(.noReportsFound))
+                                return
+                            }
+
+                            if reports.isEmpty {
+                                completion(.failure(.noReportsFound))
+                            } else {
+                                self?.updateWithDecryptedReports(devices: devices)
+                                completion(.success(()))
+                            }
                         }
                     }
                 }
             }
         }
     }
+
     
-    func mergeAndSaveReports(reports: [FindMyReport]) {
+    func mergeAndSaveReports(reports: [FindMyReport], completion: @escaping (Error?) -> Void) {
         // Get URL of the file to save reports
         guard let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("location_reports.json") else {
+            completion(NSError(domain: "FileURLNotFound", code: 0, userInfo: nil))
             return
         }
         print(fileURL)
         
-        var allReports: [FindMyReport] = []
+        // Perform decoding asynchronously
+        DispatchQueue.global().async {
+            do {
+                var allReports: [FindMyReport] = []
 
-        // Read previously saved reports from file
-        if let data = try? Data(contentsOf: fileURL),
-           let savedReports = try? JSONDecoder().decode([FindMyReport].self, from: data) {
-            // Remove duplicates from newly downloaded reports
-            let uniqueReports = reports.filter { newReport in
-                !savedReports.contains { existingReport in
-                    return newReport.id == existingReport.id
+                // Read previously saved reports from file
+                if let data = try? Data(contentsOf: fileURL),
+                   let savedReports = try? JSONDecoder().decode([FindMyReport].self, from: data) {
+                    // Remove duplicates from newly downloaded reports
+                    let uniqueReports = reports.filter { newReport in
+                        !savedReports.contains { existingReport in
+                            return newReport.id == existingReport.id
+                        }
+                    }
+                    // Merge newly downloaded reports with previously saved reports
+                    allReports.append(contentsOf: savedReports)
+                    allReports.append(contentsOf: uniqueReports)
+                } else {
+                    // No previously saved reports, simply add all newly downloaded reports
+                    allReports.append(contentsOf: reports)
                 }
-            }
-            // Merge newly downloaded reports with previously saved reports
-            allReports.append(contentsOf: savedReports)
-            allReports.append(contentsOf: uniqueReports)
-        } else {
-            // No previously saved reports, simply add all newly downloaded reports
-            allReports.append(contentsOf: reports)
-        }
 
-        // Write merged reports back to file
-        do {
-            let jsonData = try JSONEncoder().encode(allReports)
-            try jsonData.write(to: fileURL)
-        } catch {
-            print("Failed to write new reports to file")
+                // Write merged reports back to file
+                let jsonData = try JSONEncoder().encode(allReports)
+                try jsonData.write(to: fileURL)
+
+                // Completion
+                completion(nil)
+            } catch {
+                // Handle error
+                completion(error)
+            }
         }
     }
 }
