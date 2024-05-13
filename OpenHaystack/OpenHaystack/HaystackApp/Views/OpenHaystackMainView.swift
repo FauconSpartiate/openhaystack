@@ -167,10 +167,16 @@ struct OpenHaystackMainView: View {
                         Circle()
                             .fill(self.mailPluginIsActive ? Color.green : Color.orange)
                             .frame(width: 8, height: 8)
-                        Label("Reload", systemImage: "arrow.clockwise")
-                            .disabled(!self.mailPluginIsActive)
+                        if self.isLoading {
+                            ActivityIndicator(size: .small)
+                                .disabled(!self.mailPluginIsActive)
+                                .frame(width: 16, height: 16)
+                        } else {
+                            Label("Reload", systemImage: "arrow.clockwise")
+                                .disabled(!self.mailPluginIsActive)
+                                .frame(width: 16, height: 16)
+                        }
                     }
-
                 }
             )
             .disabled(self.accessories.isEmpty)
