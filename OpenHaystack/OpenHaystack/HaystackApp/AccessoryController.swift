@@ -43,15 +43,26 @@ class AccessoryController: ObservableObject {
     }
 
     func initObserver() {
-        self.listElementsObserver.forEach({
-            $0.cancel()
-        })
-        self.accessories.forEach({
-            let c = $0.objectWillChange.sink(receiveValue: { [weak self] in self?.objectWillChange.send() })
-            // Important: You have to keep the returned value allocated,
-            // otherwise the sink subscription gets cancelled
-            self.listElementsObserver.append(c)
-        })
+        DispatchQueue.main.async {  // Ensure everything inside runs on the main thread
+            // Cancel all existing observers to prevent memory leaks or duplications
+            self.listElementsObserver.forEach({
+                $0.cancel()
+            })
+
+            // Clear the array after cancelling subscriptions
+            self.listElementsObserver.removeAll()
+
+            // Setup new observers for each accessory
+            self.accessories.forEach({
+                let c = $0.objectWillChange.sink(receiveValue: { [weak self] in
+                    DispatchQueue.main.async {  // Even if already on main, ensures safety
+                        self?.objectWillChange.send()
+                    }
+                })
+                // Important: Keep the returned cancellable stored
+                self.listElementsObserver.append(c)
+            })
+        }
     }
 
     func save() throws {
@@ -66,19 +77,23 @@ class AccessoryController: ObservableObject {
     }
 
     func updateWithDecryptedReports(devices: [FindMyDevice]) {
-        // Assign last locations
-        for device in devices {
-            if let idx = self.accessories.firstIndex(where: { $0.id == Int(device.deviceId) }) {
-                self.objectWillChange.send()
-                let accessory = self.accessories[idx]
+        DispatchQueue.main.async {  // Ensures that the UI update code runs on the main thread
+            // Assign last locations
+            for device in devices {
+                if let idx = self.accessories.firstIndex(where: { $0.id == Int(device.deviceId) }) {
+                    self.objectWillChange.send()
+                    var accessory = self.accessories[idx]  // Make a local copy to modify
 
-                let report = device.decryptedReports?
-                    .sorted(by: { $0.timestamp ?? Date.distantPast > $1.timestamp ?? Date.distantPast })
-                    .first
+                    let report = device.decryptedReports?
+                        .sorted(by: { $0.timestamp ?? Date.distantPast > $1.timestamp ?? Date.distantPast })
+                        .first
 
-                accessory.lastLocation = report?.location
-                accessory.locationTimestamp = report?.timestamp
-                accessory.locations = device.decryptedReports
+                    accessory.lastLocation = report?.location
+                    accessory.locationTimestamp = report?.timestamp
+                    accessory.locations = device.decryptedReports
+
+                    self.accessories[idx] = accessory  // Update the array with the modified accessory
+                }
             }
         }
     }
