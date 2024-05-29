@@ -273,20 +273,18 @@ class AccessoryController: ObservableObject {
                         completion(.failure(.downloadingReportsFailed))
                     case .success(let devices):
                         let reports = devices.compactMap({ $0.reports }).flatMap({ $0 })
-
-                        // Use mergeAndSaveReports asynchronously
-                        self?.mergeAndSaveReports(reports: reports) { error in
-                            if let error = error {
-                                print("Failed to merge and save reports: \(error)")
-                                completion(.failure(.noReportsFound))
-                                return
-                            }
-
-                            if reports.isEmpty {
-                                completion(.failure(.noReportsFound))
-                            } else {
-                                self?.updateWithDecryptedReports(devices: devices)
-                                completion(.success(()))
+                        if reports.isEmpty {
+                            completion(.failure(.noReportsFound))
+                        } else{
+                            self?.mergeAndSaveDevices(devices: devices) { mergeResult in
+                                switch mergeResult {
+                                case .failure(let error):
+                                    print("Failed to merge and save reports: \(error)")
+                                    completion(.failure(.noReportsFound))
+                                case .success(let mergedDevices):
+                                    self?.updateWithDecryptedReports(devices: mergedDevices)
+                                    completion(.success(()))
+                                }
                             }
                         }
                     }
@@ -296,45 +294,77 @@ class AccessoryController: ObservableObject {
     }
 
     
-    func mergeAndSaveReports(reports: [FindMyReport], completion: @escaping (Error?) -> Void) {
-        // Get URL of the file to save reports
-        guard let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("location_reports.json") else {
-            completion(NSError(domain: "FileURLNotFound", code: 0, userInfo: nil))
+    func mergeAndSaveDevices(devices: [FindMyDevice], completion: @escaping (Result<[FindMyDevice], Error>) -> Void) {
+        var result = devices  // Make a mutable copy of devices
+
+        // Define a struct to store minimal device information
+        struct SimpleDevice: Codable {
+            let deviceId: String
+            var decryptedReports: [FindMyLocationReport]?
+        }
+
+        // Get URL of the file to save device data
+        guard let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("devices_data.json") else {
+            completion(.failure(NSError(domain: "FileURLNotFound", code: 0, userInfo: nil)))
             return
         }
         print(fileURL)
         
-        // Perform decoding asynchronously
+        // Perform merging and saving asynchronously
         DispatchQueue.global().async {
             do {
-                var allReports: [FindMyReport] = []
+                var allDevices: [SimpleDevice] = []
 
-                // Read previously saved reports from file
+                // Read previously saved devices from file
                 if let data = try? Data(contentsOf: fileURL),
-                   let savedReports = try? JSONDecoder().decode([FindMyReport].self, from: data) {
-                    // Remove duplicates from newly downloaded reports
-                    let uniqueReports = reports.filter { newReport in
-                        !savedReports.contains { existingReport in
-                            return newReport.id == existingReport.id
+                   let savedDevices = try? JSONDecoder().decode([SimpleDevice].self, from: data) {
+                    // Create a dictionary for quick look-up and merging
+                    var devicesDictionary = Dictionary(uniqueKeysWithValues: savedDevices.map { ($0.deviceId, $0) })
+
+                    // Merge new devices' decrypted reports with previously saved devices
+                    for (index, newDevice) in devices.enumerated() {
+                        if let existingDevice = devicesDictionary[newDevice.deviceId] {
+                            // Use a dictionary to avoid duplicates based on timestamp
+                            var reportsByTimestamp: [Date: FindMyLocationReport] = existingDevice.decryptedReports?.reduce(into: [:]) { (dict, report) in
+                                if let timestamp = report.timestamp {
+                                    dict[timestamp] = report
+                                }
+                            } ?? [:]
+                            
+                            // Add new reports, replacing any existing ones with the same timestamp
+                            newDevice.decryptedReports?.forEach { report in
+                                if let timestamp = report.timestamp {
+                                    reportsByTimestamp[timestamp] = report
+                                }
+                            }
+
+                            // Update existing device with merged reports
+                            let updatedReports = Array(reportsByTimestamp.values)
+                            devicesDictionary[newDevice.deviceId] = SimpleDevice(deviceId: newDevice.deviceId, decryptedReports: updatedReports)
+                            result[index].decryptedReports = updatedReports  // Directly updating the original array
+                        } else {
+                            // Add new device if it doesn't exist in the saved dictionary
+                            devicesDictionary[newDevice.deviceId] = SimpleDevice(deviceId: newDevice.deviceId, decryptedReports: newDevice.decryptedReports)
                         }
                     }
-                    // Merge newly downloaded reports with previously saved reports
-                    allReports.append(contentsOf: savedReports)
-                    allReports.append(contentsOf: uniqueReports)
+
+                    // Convert dictionary back to array
+                    allDevices = Array(devicesDictionary.values)
                 } else {
-                    // No previously saved reports, simply add all newly downloaded reports
-                    allReports.append(contentsOf: reports)
+                    // No previously saved devices, simply map all new devices
+                    allDevices = devices.map { SimpleDevice(deviceId: $0.deviceId, decryptedReports: $0.decryptedReports) }
                 }
 
-                // Write merged reports back to file
-                let jsonData = try JSONEncoder().encode(allReports)
+                // Write merged devices back to file
+                let encoder = JSONEncoder()
+                let jsonData = try encoder.encode(allDevices)
                 try jsonData.write(to: fileURL)
 
-                // Completion
-                completion(nil)
+                // Completion with success, returning all merged devices
+                completion(.success(result))
             } catch {
-                // Handle error
-                completion(error)
+                // Handle error and complete with failure
+                completion(.failure(error))
             }
         }
     }
