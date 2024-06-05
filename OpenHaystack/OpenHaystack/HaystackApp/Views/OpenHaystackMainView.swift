@@ -36,9 +36,6 @@ struct OpenHaystackMainView: View {
 
     @State var mailPluginIsActive = false
     
-    @State var isDeviceConnected = false
-    @State var isChecking = false
-    
     @State var showESP32DeploySheet = false
 
     var body: some View {
@@ -118,21 +115,7 @@ struct OpenHaystackMainView: View {
     /// All toolbar items shown.
     var toolbarView: some View {
         Group {
-            Button(
-                action: {
-                    self.checkDeviceConnection()
-                },
-                label: {
-                    HStack {
-                        Circle()
-                            .fill(self.isChecking ? Color.orange : self.isDeviceConnected ? Color.green : Color.red)
-                            .frame(width: 8, height: 8)
-                        Label("Check device connection", systemImage: "airtag.radiowaves.forward.fill")
-                    }
-
-                }
-            )
-            .disabled(self.isChecking)
+            DeviceConnectionButton()
             
             if self.historyMapView {
                 Text("\(TimeInterval(self.historySeconds).description)")
@@ -189,7 +172,6 @@ struct OpenHaystackMainView: View {
     }
 
     func onAppear() {
-
         /// Checks if the search party token can be fetched without the Mail Plugin. If true the plugin is not needed for this environment. (e.g.  when SIP is disabled)
         let reportsFetcher = ReportsFetcher()
         if let token = reportsFetcher.fetchSearchpartyToken(),
@@ -212,8 +194,6 @@ struct OpenHaystackMainView: View {
 
         self.downloadLocationReports()
         update()
-        self.checkDeviceConnection()
-        updateDeviceCheck()
     }
     
     func update(){
@@ -224,14 +204,6 @@ struct OpenHaystackMainView: View {
         }
     }
     
-    func updateDeviceCheck(){
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10)
-        {
-            self.checkDeviceConnection()
-            updateDeviceCheck()
-        }
-    }
-
     /// Download the location reports for all current accessories. Shows an error if something fails, like plug-in is missing
     func downloadLocationReports() {
         self.isLoading = true
@@ -250,31 +222,6 @@ struct OpenHaystackMainView: View {
             case .success(_):
                 break
             }
-        }
-    }
-    
-    func checkDeviceConnection() {
-        if self.isChecking {
-            return
-        }
-        
-        self.isChecking = true
-
-        do{
-            try NRFLowPowerController.checkDeviceConnection(
-                completion: { result in
-                    self.isChecking = false
-                    switch result {
-                    case .success(_):
-                        self.isDeviceConnected = true
-                    case .failure(_, _):
-                        self.isDeviceConnected = false
-                    }
-                })
-        }
-        catch {
-            self.isChecking = false
-            self.isDeviceConnected = false
         }
     }
 
@@ -480,6 +427,67 @@ struct OpenHaystackMainView: View {
         case importFailed
     }
 
+}
+
+struct DeviceConnectionButton: View {
+    @State var isDeviceConnected = false
+    @State var isChecking = false
+    
+    func onAppear() {
+        self.checkDeviceConnection()
+        updateDeviceCheck()
+    }
+    
+    func updateDeviceCheck(){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5)
+        {
+            self.checkDeviceConnection()
+            updateDeviceCheck()
+        }
+    }
+    
+    func checkDeviceConnection() {
+        if self.isChecking {
+            return
+        }
+        
+        self.isChecking = true
+
+        do{
+            try NRFLowPowerController.checkDeviceConnection(
+                completion: { result in
+                    self.isChecking = false
+                    switch result {
+                    case .success(_):
+                        self.isDeviceConnected = true
+                    case .failure(_, _):
+                        self.isDeviceConnected = false
+                    }
+                })
+        }
+        catch {
+            self.isChecking = false
+            self.isDeviceConnected = false
+        }
+    }
+    
+    var body: some View {
+        Button(
+            action: {
+                self.checkDeviceConnection()
+            },
+            label: {
+                HStack {
+                    Circle()
+                        .fill(self.isChecking ? Color.orange : self.isDeviceConnected ? Color.green : Color.red)
+                        .frame(width: 8, height: 8)
+                    Label("Check device connection", systemImage: "airtag.radiowaves.forward.fill")
+                }
+                
+            }
+        )
+        .disabled(self.isChecking)
+    }
 }
 
 struct OpenHaystackMainView_Previews: PreviewProvider {
