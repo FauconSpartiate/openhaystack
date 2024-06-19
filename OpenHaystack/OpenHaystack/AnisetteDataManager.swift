@@ -149,13 +149,22 @@ extension AnisetteDataManager {
     }
 
     fileprivate func finishRequest(forUUID requestUUID: String, result: Result<AppleAccountData, Error>) {
-        let completionHandler = self.anisetteDataCompletionHandlers[requestUUID]
-        self.anisetteDataCompletionHandlers[requestUUID] = nil
+        // Safely remove the completion handler for the given UUID
+        let completionHandler = self.anisetteDataCompletionHandlers.removeValue(forKey: requestUUID)
+        if completionHandler == nil {
+            print("No completion handler found for UUID: \(requestUUID)")
+        }
 
-        let timer = self.anisetteDataTimers[requestUUID]
-        self.anisetteDataTimers[requestUUID] = nil
+        // Safely remove the timer for the given UUID
+        let timer = self.anisetteDataTimers.removeValue(forKey: requestUUID)
+        if timer == nil {
+            print("No timer found for UUID: \(requestUUID)")
+        }
 
+        // Invalidate the timer if it exists
         timer?.invalidate()
+
+        // Call the completion handler with the result if it exists
         completionHandler?(result)
     }
 }
