@@ -36,9 +36,13 @@ struct OpenHaystackApp: App {
         WindowGroup {
             OpenHaystackMainView()
                 .environmentObject(self.accessoryController)
-                .frame(minWidth: 1900, maxWidth: .infinity, minHeight: 800, maxHeight: .infinity)
                 .onAppear {
                     //self.checkForUpdates()
+                    DispatchQueue.main.async {
+                        if let window = NSApplication.shared.windows.first {
+                            window.toggleFullScreen(nil)
+                        }
+                    }
                 }
         }
         .commands {
